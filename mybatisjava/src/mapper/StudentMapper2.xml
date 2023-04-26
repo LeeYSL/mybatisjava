@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--/mybatisjava/src/mapper/StudentMapper2.xml -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="student2">
+  <select id="select1" resultType="Student" parameterType="map">
+     select * from student 
+     <where>
+       <if test="grade != null">grade = #{grade}</if>
+       <if test="studno != null">studno = #{studno}</if>
+       <if test="height != null">height >= #{height}</if>
+     </where>
+    
+  </select>
+  <!-- 동적 태그 방식
+    1.map = null 
+      select * from student 문장 실행
+    2.map = ("grade",1)
+      select * from student where grade = #{grade}
+    3.map = ("studno",980111)
+      select * from student studno=#{studno}
+    4.map = ("height",180)
+      select * from student where height >= #{height} 
+    5.map = ("grade",1),("height",180)
+      select * from student  
+      where grade = #{grade}  height >= #{height} 
+    -->
+ <select id="select2" resultType="Student" parameterType="map">
+     select * from student
+     <choose>
+       <when test="grade != null and height != null">
+             where grade =#{grade} and #{height}</when>           
+       <when test="grade != null">
+             where grade = #{grade}</when>        
+       <when test="studno != null">
+             where studno = #{studno}</when>
+       <when test="height != null">
+             where height >= #{height}</when>
+    </choose> 
+    </select>
+    
+ <select id="select3" resultType="Student" parameterType="map">
+     select * from student
+     <trim prefix="where" prefixOverrides="AND || OR"> 
+     <!-- prefixOverrides AND || OR 를 where로 바꿔준다.-->
+       <if test="grade != null">and grade = #{grade}</if>
+       <if test="weight != null">and weight >= #{weight}</if>
+       <if test="height != null">and height >=#{height}</if> 
+     </trim>
+    </select>    
+ <!-- 
+    map : grade=1, weight=80, height=180
+     select * from student
+        and grade = #{grade}
+        and weight >= #{weight}
+        and height >= #{height}  
+        
+    map : grade=1, weight=80
+     select * from student 
+         and grade = 1 =>where 바뀜
+         and weight = 80
+         
+   map : grade=1
+    select * from student
+       where grade = 1                 
+  -->   
+  <select id="select4" parameterType="map" resultType="Student">
+     select * from student
+     <if test="datas != null">
+        where ${column} in
+        <foreach collection="datas" item="d" separator=","
+             open="(" close=")">#{d}</foreach></if>
+  </select> 
+  <!-- 
+  
+  select * from student where major1 (101,201,301)
+     map : column=major1, datas=[101,201,301]
+           select * from student
+           where major1 in (101,201,301)
+           
+           <forEach 태그의 속성
+           collection : collection 객체를 가진 키 이름
+           item : collection 내부의 요소 한 개를 가진 객체
+           separator : 요소들 사이 구분자 
+           open : 반복을 시작 할 때 표시되는 문자
+           close : 반복을 종료 할 때 표시되는 문자
+           
+  
+   -->
+    
+</mapper>
